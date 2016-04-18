@@ -1,0 +1,4 @@
+node_modules/
+.vscode/
+built/
+src/api.config.js
