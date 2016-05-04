@@ -1,30 +1,11 @@
-module.exports = function(config,router){
-    
-    "use strict";
+import multiple from './multiple';
 
- 
-    var multiple = require('./multiple')(config);
-
-  
-      //nb changed from 'node/saveMultiple'
-    var saveMultiple=function(req,res){
-          multiple.save(req.body.multiple)
-          .then(function(data){
-               res.status(200).json(data);
-            })
-          .catch(function (err) {
-               res.status(500).json({error:err});
-           });
-    };
-    router.route('/node/saveMultiple').post(saveMultiple);
-    router.route('/multiple/save').post(saveMultiple);
-  
-    
-
-
-  
-  
-
-    return router;
-
+export default (router) => {
+  const saveMultiple = (req, res) => {
+    multiple.save(req.body.multiple)
+        .then(data => { res.status(200).json(data); })
+        .catch(err => { res.status(500).json({ error:err }); });
+  };
+  router.route('/node/saveMultiple').post(saveMultiple);
+  router.route('/multiple/save').post(saveMultiple);
 };

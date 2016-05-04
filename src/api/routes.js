@@ -1,48 +1,37 @@
-module.exports = function(config){
-    
-   "use strict";
-    
-   var router = require("express").Router();
-     
-   require("./node.routes")(config,router);
-   require("./picture.routes")(config,router);
-   require("./relationship.routes")(config,router);
-   require("./graph.routes")(config,router);
-   require("./search.routes")(config,router);
-   require("./user.routes")(config,router);
-   require("./multiple.routes")(config,router);
-   require("./multiple.routes")(config,router);
-   
-   
-   
-   
-   var type=require("./type")(config);
-   var label=require("./label")(config);
-   var predicate=require("./predicate")(config);
+import express from 'express';
+import type from './type';
+import label from './label';
+import predicate from './predicate';
+import nodeRoutes from './node.routes';
+import pictureRoutes from './picture.routes';
+import relationshipRoutes from './relationship.routes';
+import graphRoutes from './graph.routes';
+import searchRoutes from './search.routes';
+import userRoutes from './user.routes';
+import multipleRoutes from './multiple.routes';
 
-    router.route('/predicates').get(function (req, res) {
-        predicate.refreshList().then(function (predicates) {
-            res.status(200).json(predicates);
-        });
-    });
-    
-    router.route('/types').get(function (req, res) {
-        type.refreshList().then(function (types) {
-            res.status(200).json(types);
-        });
-    });
+const router = new express.Router();
+nodeRoutes(router);
+pictureRoutes(router);
+relationshipRoutes(router);
+graphRoutes(router);
+searchRoutes(router);
+userRoutes(router);
+multipleRoutes(router);
 
-    router.route('/labels/distinct').post(function(req,res){
-        label.list.distinct(req.body.labels)    
-        .then(function(data){
-               res.status(200).json(data);
-            })
-          .catch(function (err) {
-               res.status(500).json({error:err});
-           });
-    });
-    
-    
- return router;
-    
-} ;
+router.route('/predicates').get((req, res) => {
+  predicate.refreshList().then(predicates => res.status(200).json(predicates));
+});
+
+router.route('/types').get((req, res) => {
+  type.refreshList().then(types => res.status(200).json(types));
+});
+
+router.route('/labels/distinct').post((req, res) => {
+  label.list.distinct(req.body.labels)
+        .then(data => res.status(200).json(data))
+        .catch(err => res.status(500).json({ error: err }));
+});
+
+export default router;
+

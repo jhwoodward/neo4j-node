@@ -1,147 +1,59 @@
-module.exports = function(config)
-{
-    "use strict";
+import cypher from './cypher';
+import utils from './utils';
+import changeCase from 'change-case';
 
-    var extend = require('extend');
-    config = extend ( require('./config.default'), config);
-    var cypher = require("./cypher")(config);
-    var utils = require("./utils")(config);
-    var changeCase = require("change-case");
-    var _ = require("lodash");
+const api = {
+  init: () => {
+    api.refreshList();
+    return api;
+  },
+    // object containing all types keyed on Lookup
+  list: {},
+  isType: label => api.list[label] !== undefined,
+  refreshList: () => cypher.executeQuery(
+            // NB types would require at least one property to show up here
+            'match (n:Type)-[r:PROPERTY]->(p:Property) return n,collect(r),collect(p),labels(n)',
+                'row')
+                .then(data => {
+                  const types = {};
+                  for (let i = 0; i < data.length; i++) {
+                    const d = data[i];
+                    const t = utils.camelCase(d.row[0]);
+                    const labels = d.row[3];
 
-
-
-var that = {
-    //object containing all types keyed on Lookup
-    list: {}
-    ,
-    isType: function (label) {
-        return that.list[label] !== undefined;
-    }
-    ,
-    schema:function(){//return list with full schema
-          return cypher.executeQuery(
-            //NB types would require at least one property to show up here
-            "match (n:Type) return n,collect(r),collect(p),labels(n)",
-                "row")
-                .then(function (data) {
-
-                });
-                
-    }
-    ,
-    refreshList: function () {
-        
-        return cypher.executeQuery(
-            //NB types would require at least one property to show up here
-            "match (n:Type)-[r:PROPERTY]->(p:Property) return n,collect(r),collect(p),labels(n)",
-                "row")
-                .then(function (data) {
-
-            let types = {};
-            
-            for (let i = 0; i < data.length; i++) {
-
-                var d = data[i];
-                var t = utils.camelCase(d.row[0]);
-                var labels = d.row[3];
-                
-                if (t.lookup) {
-                    var typeName = changeCase.camelCase(t.lookup);
-            
-                    var type = {
-                        lookup:typeName,
+                    if (t.lookup) {
+                      const type = {
+                        lookup: t.lookup,
                         description: t.description,
-                        props:{},
-                        isSystem: labels.indexOf("SystemInfo") > -1,
-                        isGlobal:labels.indexOf("Global") > -1
-                        };
-                    
-                    if (t.systemInfo){
+                        props: {},
+                        isSystem: labels.indexOf('SystemInfo') > -1,
+                        isGlobal: labels.indexOf('Global') > -1
+                      };
+                      if (t.systemInfo) {
                         type.systemInfo = t.systemInfo;
-                    }
-                    
-                    var rels = d.row[1];//relationship has metadata such as 'Required' true/false
-                    var props = d.row[2];//array
-                    for (let j = 0; j < props.length; j++) {
-                        
-                        var p = utils.camelCase(props[j]);
-                        var propName = changeCase.camelCase(p.lookup);
-                        var rel = utils.camelCase(rels[j]);
-                        var prop = {
-                            name:propName,
-                            required: (rel && rel.required) || false,
-                            type:p.type || "string",
+                      }
+                      // Relationship has metadata such as 'Required' true/false
+                      const rels = d.row[1];
+                      const props = d.row[2];
+                      for (let j = 0; j < props.length; j++) {
+                        const p = utils.camelCase(props[j]);
+                        const propName = changeCase.camelCase(p.lookup);
+                        const rel = utils.camelCase(rels[j]);
+                        const prop = {
+                          name: propName,
+                          required: (rel && rel.required) || false,
+                          type: p.type || 'string',
                         };
-                        
                         type.props[propName] = prop;
-                    }  
-                    types[typeName] = type;
-                } 
-                else {
-                    console.warn("Type without lookup (id:" + d.row[0] + ")");
-                }
-            }
-
-            that.list = types;
-            return types;
-        });
-    }
-    ,
-    isSystemInfo: function (label) {
-        
-        return label == "Global" || label == "Type" || label == "Label" || label == "SystemInfo";
-    },
-    //should be in the ui
-    getLabelClass: function (node, label) {
-
-        if (node && label === node.Type) {
-            return 'label-warning';
-        }
-        
-        if (that.isSystemInfo(label)) {
-            return 'label-system';
-        }
-        
-        if (that.isType(label)) {
-            return 'label-inverse pointer';
-        }
-        return 'label-info';
-    }
-    ,
-    personTypes: ['Painter',
-        'Illustrator',
-        'Philosopher',
-        'Poet',
-        'FilmMaker',
-        'Sculptor',
-        'Writer',
-        'Patron',
-        'Leader',
-        'Explorer',
-        'Composer',
-        'Scientist',
-        'Caricaturist',
-        'Mathematician']
-    ,
-    pictureTypes: ['Painting', 'Illustration', 'Drawing', 'Print']
-    ,
-    isPerson: function (type) {
-        return that.personTypes.indexOf(type) > -1;
-    }
-    /*
-    ,
-    items:function(id){
-        var q = "match n:"
-    }
-    */
-
+                      }
+                      types[t.lookup] = type;
+                    } else {
+                      console.warn(`Type without lookup (id:${d.row[0]})`);
+                    }
+                  }
+                  api.list = types;
+                  return types;
+                })
 };
 
-return (function(){
-     that.refreshList();
-     return that;
-})();
-
-
-};
+export default api.init();

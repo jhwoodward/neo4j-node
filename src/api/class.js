@@ -1,47 +1,40 @@
-module.exports = function(config)
-{
-    "use strict";
+import cypher from './cypher';
+import utils from './utils';
+import changeCase 'change-case';
+import predicate from './predicate';
+import _ from 'lodash';
+import merge from 'deepmerge';
 
-    var extend = require('extend');
-    config = extend ( require('./config.default'), config);
-    var cypher = require("./cypher")(config);
-    var utils = require("./utils")(config);
-    var changeCase = require("change-case");
-    var predicate = require("./predicate")(config);
-    var _ = require("lodash");
-  var merge = require('deepmerge');
-
-
-var that = {
+const api = {
     //object containing all types keyed on Lookup
     list: {}
     ,
     isClass: function (label) {
-        return that.list[label] !== undefined;
+      return that.list[label] !== undefined;
     }
     ,
     refreshList: function () {
-        return predicate.refreshList().then(that.buildSchema);
+      return predicate.refreshList().then(api.buildSchema);
     }
     ,
     isSystemInfo: function (label) {
-        return label == "Global" || label == "Type" || label == "Label" || label == "SystemInfo";
+      return label === "Global" || label === "Type" || label === "Label" || label === "SystemInfo";
     },
     //TODO : move to the ui
     getLabelClass: function (node, label) {
 
-        if (node && label === node.Type) {
-            return 'label-warning';
-        }
+      if (node && label === node.Type) {
+        return 'label-warning';
+      }
         
-        if (that.isSystemInfo(label)) {
-            return 'label-system';
-        }
+      if (that.isSystemInfo(label)) {
+        return 'label-system';
+      }
         
-        if (that.isType(label)) {
-            return 'label-inverse pointer';
-        }
-        return 'label-info';
+      if (that.isType(label)) {
+        return 'label-inverse pointer';
+      }
+      return 'label-info';
     }
     ,
     personTypes: ['Painter',
@@ -62,16 +55,12 @@ var that = {
     pictureTypes: ['Painting', 'Illustration', 'Drawing', 'Print']
     ,
     isPerson: function (type) {
-        return that.personTypes.indexOf(type) > -1;
+      return that.personTypes.indexOf(type) > -1;
     }
 
 
-};
-
-return (function(){
-     that.refreshList();
-     return that;
-})();
+  };
 
 
-};
+export default () => { api.refreshList(); return api; };
+

@@ -1,39 +1,16 @@
-﻿
-var express = require('express');        // call express
-var app = express();                 // define our app using express
-var bodyParser = require('body-parser');
+﻿import express from 'express';
+import bodyParser from 'body-parser';
+import config from './server.config';
+import headers from './headers';
+import routes from './routes';
 
-// configure app to use bodyParser()
-// this will let us get the data from a POST
+const port = process.env.PORT || config.host.port;
+const app = express();
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-var config = require('./config');
-
-// Add headers
-app.use(require('./headers'));
-
-var port = process.env.PORT || config.host.port;       
-
-var apiconfig = require('./api.config');
-
-/*apiconfig should look like this:
-{  
-    neo4j:
-        {
-            root: "http://localhost:7474",
-            password: 'password'
-        }
-        ,
-        media:{
-            root:'http://path/to/media/'
-        } 
-    
-}
-*/
-
-//configure routes
-app.use(config.host.root, require('./api/routes')(apiconfig));
-
+app.use(headers);
+app.use(config.host.root, routes);
 app.listen(port);
-console.log('Listening on port ' + port);
+
+console.log(`Api listening on port ${port}`);
