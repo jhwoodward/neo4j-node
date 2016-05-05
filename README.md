@@ -47,3 +47,7 @@ As there is no support for relationship types in neo4j (as of version 2) the Api
 ## Labels
 
 Neo4j provides the ability to apply labels to nodes as a way of grouping portions of the graph. Labels can be anything, but lend themselves well to describing characteristics of nodes. As such, a node could be said to be defined by the combination of its labels. The Api provides a layer of logic on to enable properties to be defined against labels. The node's schema is then an aggragate of the properties of its labels.
+
+## Colloborate
+
+If you are interested in this project it would be great to have your contribution, so don't hesitate to dive in or get in touch. Thanks !
