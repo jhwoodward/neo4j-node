@@ -10,7 +10,7 @@ A neo4j graph database instance is required to provide the persistence layer. Yo
 
 The Api provides high level CRUD methods for neo4j nodes and relationships. It can be used via REST or directly referenced from an existing NodeJS application.
 
-For example, passing the following JSON structure to node.save:
+For example, the following JSON structure:
 
 ```javascript
 { 
@@ -31,18 +31,18 @@ For example, passing the following JSON structure to node.save:
                             lookup: 'feeds',
                             direction: 'in'
                     },
-                        'items': [testData.nodes.Jim]
+                        'items': [{label: 'Jim'}]
                     }
             }
 }
             
 ```
 
-will generate cypher which will be sent to neo4j to generate the corresponding nodes and relationships.
+ to ``node.save`` will generate cypher which will be sent to neo4j to generate the corresponding nodes and relationships.
 
 ## Predicates
 
-As there is no support for relationship types in neo4j (as of version 2) the Api provides a layer of logic that enables relationship types to be stored in the database as Predicate nodes. Relationship types can then be given metadata where applicable, such as Symmetrical (true/false), Force: (attract/repel).
+As there is no support for relationship types in neo4j (as of version 2) the Api provides a layer of logic that enables relationship types to be stored in the database as *Predicate* nodes. Relationship types can then be given metadata where applicable, such as ``Symmetrical (true/false)``, ``Force: (attract/repel)``.
 
 ## Labels
 
