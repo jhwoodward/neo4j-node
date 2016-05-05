@@ -23,17 +23,19 @@ const parseNodeData = (data) => {
 
 const getNode = (match, where) => {
   const q = `
-      match(${match} where ${where}
+      match(${match}) where ${where}
       with n optional match (${match}) -[:IMAGE] - (i:Image:Main)
-      return n,ID(n),LABELS(n),i`;
-
+      return n,ID(n),LABELS(n),i
+      `;
   return cypher.executeQuery(q)
     .then((data) => {
       if (data.length) {
         const n = parseNodeData(data);
-        if (data[0].row[3]) {
-          n.image = image.configure(data[0].row[3]);
-        }
+      //  console.log('parsed',n);
+       // if (data[0].row[3]) {
+      //    n.image = image.configure(data[0].row[3]);
+      //  }
+       // console.log('with image',n);
         return n;
       }
       return null;
@@ -42,7 +44,7 @@ const getNode = (match, where) => {
 
 const getNodeById = id => getNode('n', `ID(n) = ${id}`);
 
-const getNodeByLabel = lab => getNode('n:Label', `n.Label = ${lab}`);
+const getNodeByLabel = lab => getNode('n:Label', `n.Label = '${lab}'`);
 
 const addRelationships = n => relationship.list.conceptual(n).
   then(r => {
@@ -105,7 +107,7 @@ const updateRelationships = n => relationship.difference(n).
     }
     return null;
   });
-  
+
 const get = (id) => {
   const parsed = utils.parseIdOrLabel(id);
   if (parsed.id) {
@@ -183,7 +185,7 @@ const addSchema = (n) => {
 
 const api = {
     // get node by (internal)ID or label
-  get,
+  get: get,
     // Get node by (internal ID) or label
     // Add relationships
   getWithRels: (id) => {

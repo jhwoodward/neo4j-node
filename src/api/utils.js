@@ -7,11 +7,12 @@ const api = {
     match = match || '';
     alias = alias || 'n';
     const parsed = api.parseIdOrLabel(id);
+    console.log(parsed);
     let q;
     if (parsed.id) {
-      q = `match (${alias + match})  where ID(${alias}) = ${parsed.id}`;
+      q = `match (${alias + match}) where ID(${alias}) = ${parsed.id}`;
     } else if (parsed.label) {
-      q = `match (${alias + match}:Label)  where ${alias}.Label = '${parsed.label}'`;
+      q = `match (${alias + match}:Label) where ${alias}.Label = '${parsed.label}'`;
     }
     return q;
   },
@@ -20,7 +21,7 @@ const api = {
         // Handle possibility of node object being passed in
         // instead of just the id
       if (id.id) {
-        return { id };
+        return { id: id.id };
       } else if (typeof id === 'string') {
         return { label: changeCase.pascalCase(id) };
       }

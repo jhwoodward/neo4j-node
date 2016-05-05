@@ -1,6 +1,6 @@
 ﻿import config from '../api.config';
 import r from 'request-promise';
-import NeoError from 'NeoError';
+import NeoError from './NeoError';
 
 const txUrl = config.neo4j.root + '/db/data/transaction/commit';
 

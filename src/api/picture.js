@@ -11,25 +11,25 @@ const getPicture = (id) => {
   return n,ID(n),LABELS(n),i,ID(i),LABELS(i)
   `;
   return cypher.executeQuery(q, 'row').
-  then((data) => {
-    if (data.length) {
-      const n = utils.camelCase(data[0].row[0]);
-      n.id = data[0].row[1];
-      n.labels = data[0].row[2];
-      if (n.labels) n.labels.sort();
-      n.images = [];
-      for (let i = 0; i < data.length; i++) {
-        if (data[i].row[3]) {
-          const img = utils.camelCase(data[i].row[3]);
-          img.id = data[i].row[4];
-          img.labels = data[i].row[5];
-          image.configure(img);
-          n.images.push(img);
+    then((data) => {
+      if (data.length) {
+        const n = utils.camelCase(data[0].row[0]);
+        n.id = data[0].row[1];
+        n.labels = data[0].row[2];
+        if (n.labels) n.labels.sort();
+        n.images = [];
+        for (let i = 0; i < data.length; i++) {
+          if (data[i].row[3]) {
+            const img = utils.camelCase(data[i].row[3]);
+            img.id = data[i].row[4];
+            img.labels = data[i].row[5];
+            image.configure(img);
+            n.images.push(img);
+          }
         }
+        return n;
       }
-      return n;
-    }
-    return null;
+      return null;
   });
 };
 

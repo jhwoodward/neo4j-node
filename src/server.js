@@ -2,7 +2,7 @@
 import bodyParser from 'body-parser';
 import config from './server.config';
 import headers from './headers';
-import routes from './routes';
+import routes from './api/routes';
 
 const port = process.env.PORT || config.host.port;
 const app = express();
