@@ -38,7 +38,7 @@ For example, the following JSON structure:
             
 ```
 
- to ``node.save`` will generate cypher which will be sent to neo4j to generate the corresponding nodes and relationships.
+passed to ``node.save`` will generate cypher which will be sent to neo4j to generate the corresponding nodes and relationships.
 
 ## Predicates
 
