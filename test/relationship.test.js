@@ -2,16 +2,13 @@
 
 var assert = require('assert');
 var should = require('should');
-var config = require('../src/api.config');
-var node = require('../src/api/node')(config);
-var utils = require('../src/api/utils')(config);
-var testData = require('./test.data')(config);
-var _=require('lodash');
-var changeCase=require('change-case');
+var node = require('../built/api/node').default;
+var utils = require('../built/api/utils').default;
+var testData = require('./test.data');
+var _= require('lodash');
+var changeCase = require('change-case');
 
 describe('Relationship', function() {
-    
-
   before(function(done){
       testData.cleanup(function(){
            testData.createNodes(done);

@@ -184,10 +184,10 @@ const addSchema = (n) => {
 
 
 const api = {
-    // get node by (internal)ID or label
+  // get node by (internal)ID or label
   get: get,
-    // Get node by (internal ID) or label
-    // Add relationships
+  // Get node by (internal ID) or label
+  // Add relationships
   getWithRels: (id) => {
     const parsed = utils.parseIdOrLabel(id);
     if (parsed.id) {
@@ -200,12 +200,6 @@ const api = {
     }
   }
     ,
-    // TODO:
-    // for labels (types), type hierachy needs to be enforced - eg if Painter then add Person:Global,-----------------DONE
-    // if Painting the add Picture:Creation. These will need to be kept updated.
-    // when Lookup is updated, the corresponding label needs to be renamed MATCH (n:OLD_LABEL)  REMOVE n:OLD_LABEL SET n:NEW_LABEL--------------- DONE
-    // when updating Type, label needs to be updated, when creating----------------------DONE
-    // When we come to modifying labels on creations, their relationships will need to be kept updated
   save: (n, user) => {
     if (n.id > -1) {
       return api.update(n, user);
@@ -214,16 +208,16 @@ const api = {
       return api.create(n, user);
     }
   }
-    ,
-    // n can be an object with any properties
-    // the following properties have special meaning:
-    // --id: must not be > -1 as this indicates an existing node
-    // --labels: an array of strings. The node will be saved with these neo4j labels. Required.
-    // --temp.relationships: relationships defined as properties. Not Required.
-    // --temp.links: links .. ??? Not Required
-    // user is an optional parameter
-    // --if supplied and user exists a 'created' relationship is added
-    // Following save each rel is created as a neo4j relationship
+  ,
+  // n can be an object with any properties
+  // the following properties have special meaning:
+  // --id: must not be > -1 as this indicates an existing node
+  // --label: the friendly id for the node
+  // --labels: an array of strings. The node will be saved with these neo4j labels. Required.
+  // --relationships: relationships defined as properties. Not Required.
+  // User is an optional parameter
+  // --if supplied and user exists a 'created' relationship is added
+  // Each relationship is created as a neo4j relationship
   create:(n, user) => {
     if (n.id > -1) throw ('Node must have ID < 0 for insert');
     if (!(n.labels instanceof Array)) throw ('Node must have labels array property');
@@ -232,20 +226,19 @@ const api = {
     n.labels = utils.pascalCase(n.labels);
     const q = `create (n:${n.labels.join(':')} {props}) with n set n.created=timestamp() `;
 
-        // if user passed as second argument create a link to the user from this node
     if (user) {
       q += ` with n  MATCH (u:User {Lookup:'${user.lookup}'}) create (u) - [s:CREATED]->(n)`;
     }
     q += ' return n,ID(n)';
 
-    return cypher.executeQuery(q, 'row', { 'props': api.trimForSave(n) })
-            .then((result) => {
-              n = Object.assign(n, parseNodeData(result));
-              return createRelationships(n);
-            })
-            .then(() => {
-              return api.getWithRels(n);
-            });
+    return cypher.executeQuery(q, 'row', { 'props': api.trimForSave(n) }).
+      then((result) => {
+        n = Object.assign(n, parseNodeData(result));
+        return createRelationships(n);
+      }).
+      then(() => {
+        return api.getWithRels(n);
+      });
   },
   update: (n, user) => {
 
@@ -253,15 +246,15 @@ const api = {
 
         // NB Have to update labels before properties in case label property has been modified
     return updateLabels(n).
-                then(function () {
-                  return updateProperties(n);
-                }).
-                then(function () {
-                  return updateRelationships(n);
-                }).
-                then(function () {
-                  return api.getWithRels(n);
-                });
+      then(function () {
+        return updateProperties(n);
+      }).
+      then(function () {
+        return updateRelationships(n);
+      }).
+      then(function () {
+        return api.getWithRels(n);
+      });
   },
     // Deletes node and relationships forever
   destroy: function (node) {
@@ -277,11 +270,12 @@ const api = {
       throw 'node not supplied';
     }
     const q = `
-          match(n)  where ID(n)=${node.id} remove n:${node.labels.join(':')}
-          set n:Deleted,n.oldlabels={labels},n.deleted=timestamp()
-          return n,ID(n),LABELS(n)
-        `;
-    return cypher.executeQuery(q, 'row', { 'labels': node.labels }).then(parseNodeData);
+      match(n)  where ID(n)=${node.id} remove n:${node.labels.join(':')}
+      set n:Deleted,n.oldlabels={labels},n.deleted=timestamp()
+      return n,ID(n),LABELS(n)
+    `;
+    return cypher.executeQuery(q, 'row', { 'labels': node.labels }).
+      then(parseNodeData);
   },
   // Removes 'Deleted' label and restores old labels
   // Currently requires the 'oldlabels' property to be present on the node
@@ -293,8 +287,8 @@ const api = {
           match(n)  where ID(n)=${node.id} set n:${node.oldlabels.join(':')}
          remove n:Deleted, n.oldlabels, n.deleted 
          return n,ID(n),LABELS(n)`;
-
-    return cypher.executeQuery(q).then(parseNodeData);
+    return cypher.executeQuery(q).
+      then(parseNodeData);
   },
   getSchema: (id) => {
     return api.getLabels(id).then(labels => {

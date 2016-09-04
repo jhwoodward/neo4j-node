@@ -1,9 +1,9 @@
 {
-  "name": "vsys.ngapi",
+  "name": "neo4j-api-rest",
   "version": "0.1.2",
   "private": false,
   "main": "./src/server.js",
-  "description": "REST Api for Neograph knowledge management system",
+  "description": "Api for Neo4j with REST",
   "author": {
     "name": "J H Woodward",
     "email": "jw@vsys.co.uk"

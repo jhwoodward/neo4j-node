@@ -1,13 +1,14 @@
-import assert from 'assert';
-import should from 'should';
-import config from '../src/api.config';
-import node from '../src/api/node';
-import utils from '../src/api/utils';
-import testData from './test.data';
-import _ from 'lodash';
-import changeCase from 'change-case';
+'use strict';
 
-describe('Node', () => {
+var assert = require('assert');
+var should = require('should');
+var node = require('../built/api/node').default;
+var utils = require('../built/api/utils').default;
+var testData = require('./test.data');
+var _= require('lodash');
+var changeCase=require('change-case');
+
+describe('Node', function() {
 
   before(testData.cleanup);
   after(testData.cleanup);
@@ -15,8 +16,8 @@ describe('Node', () => {
   //placeholder store deleted node
   let nDeleted;
   
-  describe('create', () => {
-        it('should return a new id for the created node', (done) => {
+  describe('create', function() {
+        it('should return a new id for the created node', function(done) {
             const createdCount = 0;
             const created = () => {
                 createdCount +=1;
@@ -37,8 +38,8 @@ describe('Node', () => {
         });
   });
   
-   describe('update', () => {
-        it('should update properties when they change', (done) => {
+   describe('update', function() {
+        it('should update properties when they change', function(done) {
             const n = testData.nodes.Joe;
             n.type='cow';
             node.save(n).then((saved) => {
