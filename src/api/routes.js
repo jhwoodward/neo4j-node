@@ -1,37 +1,29 @@
-import express from 'express';
-import type from './type';
-import label from './label';
-import predicate from './predicate';
-import nodeRoutes from './node.routes';
-import pictureRoutes from './picture.routes';
-import relationshipRoutes from './relationship.routes';
-import graphRoutes from './graph.routes';
-import searchRoutes from './search.routes';
-import userRoutes from './user.routes';
-import multipleRoutes from './multiple.routes';
+var router = require('express').Router();
+var type = require('./type');
+var label = require('./label');
+var predicate = require('./predicate');
 
-const router = new express.Router();
-nodeRoutes(router);
-pictureRoutes(router);
-relationshipRoutes(router);
-graphRoutes(router);
-searchRoutes(router);
-userRoutes(router);
-multipleRoutes(router);
+require('./node.routes')(router);
+require('./picture.routes')(router);
+require('./relationship.routes')(router);
+require('./graph.routes')(router);
+require('./search.routes')(router);
+require('./multiple.routes')(router);
 
-router.route('/predicates').get((req, res) => {
-  predicate.refreshList().then(predicates => res.status(200).json(predicates));
+router.route('/predicates').get(function (req, res) {
+  predicate.refreshList().then(function (predicates) {
+    res.status(200).json(predicates);
+  });
 });
 
-router.route('/types').get((req, res) => {
-  type.refreshList().then(types => res.status(200).json(types));
+router.route('/labels/distinct').post(function(req,res){
+  label.list.distinct(req.body.labels)    
+  .then(function(data){
+    res.status(200).json(data);
+  })
+  .catch(function (err) {
+    res.status(500).json({error:err});
+  });
 });
 
-router.route('/labels/distinct').post((req, res) => {
-  label.list.distinct(req.body.labels)
-        .then(data => res.status(200).json(data))
-        .catch(err => res.status(500).json({ error: err }));
-});
-
-export default router;
-
+module.exports = router;

@@ -1,16 +1,21 @@
-﻿import express from 'express';
-import bodyParser from 'body-parser';
-import config from './server.config';
-import headers from './headers';
-import routes from './api/routes';
+﻿var express = require('express');     
+var app = express();                
+var bodyParser = require('body-parser');
 
-const port = process.env.PORT || config.host.port;
-const app = express();
-
+// configure app to use bodyParser()
+// this will let us get the data from a POST
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(headers);
-app.use(config.host.root, routes);
-app.listen(port);
 
-console.log(`Api listening on port ${port}`);
+var config = require('./server.config');
+
+// Add headers
+app.use(require('./headers'));
+
+var port = process.env.PORT || config.host.port;       
+
+//configure routes
+app.use(config.host.root, require('./api/routes'));
+
+app.listen(port);
+console.log('Listening on port ' + port);

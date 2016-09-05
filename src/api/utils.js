@@ -1,71 +1,74 @@
-﻿import changeCase from 'change-case';
-import _ from 'lodash';
+var cypher = require('./cypher');
+var changeCase = require('change-case');
+var _ = require('lodash');
 
-const api = {
-    // Provide match to match on label(s) eg :Picture
-  getMatch: (id, alias, match) => {
+var api = {
+  //Provide match to match on label(s) eg :Picture
+  getMatch: function(id, alias, match) {
     match = match || '';
     alias = alias || 'n';
-    const parsed = api.parseIdOrLabel(id);
-    console.log(parsed);
-    let q;
+    var parsed = api.parseIdOrLabel(id);
+    var q;
     if (parsed.id) {
-      q = `match (${alias + match}) where ID(${alias}) = ${parsed.id}`;
+      q = 'match (' + alias + match + ')  where ID(' + alias + ') = ' + parsed.id;
     } else if (parsed.label) {
-      q = `match (${alias + match}:Label) where ${alias}.Label = '${parsed.label}'`;
+      q = 'match (' + alias + match + ':Label)  where ' + alias + '.Label = \'' + parsed.label + '\'';
     }
     return q;
   },
-  parseIdOrLabel: id => {
+  parseIdOrLabel : function(id) {
     if (isNaN(id)) {
-        // Handle possibility of node object being passed in
-        // instead of just the id
+      //handle possibility of node object being passed in
+      //instead of just the id
       if (id.id) {
         return { id: id.id };
       } else if (typeof id === 'string') {
-        return { label: changeCase.pascalCase(id) };
+        return {label:changeCase.pascalCase(id)};
       }
+    } else {
+      return { id: id };
     }
-    return { id };
   },
-  camelCase: props => {
-    const out = {};
-    Object.keys(props).forEach((key) => {
+  camelCase : function(props) {
+    var out = {};
+    for (var key in props) {
       out[changeCase.camelCase(key)] = props[key];
-    });
-    return out;
+    }
+    return out;          
   },
-  pascalCase: obj => {
+  pascalCase : function(obj) {
     if (_.isArray(obj)) {
-        // Array - pascal case array values
-      for (let i = 0; i < obj.length; i++) {
-        obj[i] = changeCase.pascalCase(obj[i]);
+      //array - pascal case array values
+      for (var i =0;i < obj.length;i ++) {
+          obj[i] = changeCase.pascalCase(obj[i]);
       }
       return obj;
+    } else {
+      //object - pascal case property keys
+      var out = {};
+      for (var key in obj) {
+          out[changeCase.pascalCase(key)] = obj[key];
+      }
+      return out;       
     }
-    // Object - pascal case property keys
-    const out = {};
-    Object.keys(obj).forEach((key) => {
-      out[changeCase.pascalCase(key)] = obj[key];
-    });
-    return out;
   },
-  isEmpty: obj => Object.keys(obj).length === 0 &&
-  JSON.stringify(obj) === JSON.stringify({}),
-  // Compares to object arrays
-  // returning any elements api are in 'a' but not in 'b'
-  difference: (a, b, compareOn) => {
+  //return true if object is empty
+  isEmpty: function(obj) {
+      return Object.keys(obj).length === 0 && JSON.stringify(obj) === JSON.stringify({});
+  },
+  //compares to object arrays 
+  //returning any elements that are in 'a' but not in 'b'
+  difference:function(a, b, compareOn) {
     compareOn = compareOn || 'id';
-    const aComp = a.map(e => e[compareOn]);
-    const bComp = b.map(e => e[compareOn]);
+    var aComp = a.map(function (e) { return e[compareOn]; });
+    var bComp = b.map(function (e) { return e[compareOn]; });
     return _.difference(aComp, bComp)
-        .map(e => {
-          const out = {};
-          out[compareOn] = e;
-          return out;
-        });
+      .map(function (e) { 
+        var out = {};
+        out[compareOn] =e;
+        return out;
+    });
   }
 };
 
-
-export default api;
+module.exports = api;
