@@ -9,7 +9,7 @@
     "email": "jw@vsys.co.uk"
   },
   "scripts": {
-    "lint": "eslint --fix -c .eslintrc src",
+    "lint": "jshint src",
     "prestart2": "npm run lint",
     "watch": "babel src --out-dir built --source-maps --watch",
     "prestart": "babel src --out-dir built --source-maps",
@@ -19,11 +19,6 @@
     "presets": [
       "es2015-node"
     ]
-  },
-  "jshintConfig": {
-    "esversion": 6,
-    "laxcomma": true,
-    "node": true
   },
   "dependencies": {
     "babel": "^6.3.13",
