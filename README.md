@@ -12,7 +12,7 @@ Consider the following JSON structure:
 
 ```javascript
 { 
-  label: 'George', 
+  name: 'George', 
   colour: 'Brown', 
   type: 'Elephant', 
   labels: ['Animal','Large'],
@@ -22,14 +22,14 @@ Consider the following JSON structure:
         lookup: 'loves',
         direction: 'out'
       },
-      items: [{label: 'Apple'}]
+      items: [{name: 'Apple', label: 'Fruit'}]
     },
    fed_by: {
       predicate: {
         lookup: 'feeds',
         direction: 'in'
       },
-      items: [{label: 'Jim'}]
+      items: [{name: 'Jim', label: 'Person'}]
     }
   }
 }
