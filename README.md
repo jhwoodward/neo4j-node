@@ -1,7 +1,5 @@
 ﻿# Neo4j - NodeJS Api (with REST)
 
-*Please note that code is currently in transition from ES5 to ES6 style.*
-
 ## Prequisites
 
 A neo4j graph database instance is required to provide the persistence layer. You can download this from the neo4j website http://neo4j.com/.
