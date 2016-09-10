@@ -8,7 +8,7 @@ module.exports = function(router) {
     var restrict = req.body.restrict;
     var searchFn;
     var label;
-    if (!restrict) {
+    if (!restrict || restrict === 'Label') {
       label = 'Label';
     } else if (restrict === 'user') {
       label = 'User';
