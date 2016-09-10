@@ -32,6 +32,7 @@
     "debug": "~2.0.0",
     "deepmerge": "^0.2.10",
     "express": "~4.9.0",
+    "express-graphql": "^0.5.4",
     "extend": "^3.0.0",
     "extendify": "^1.0.0",
     "immutable": "^3.7.6",
