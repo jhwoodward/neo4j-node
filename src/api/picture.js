@@ -8,7 +8,7 @@ var changeCase = require('change-case');
 var _ = require('lodash');
 
 function getPicture(id) {
-  var q= utils.getMatch(id,'n',':Picture') + ' with n optional match (n) - [:IMAGE] -> (i:Image)  return n,ID(n),LABELS(n),i,ID(i),LABELS(i) ';
+  var q= utils.getMatch(id,'n',':Picture') + ' with n optional match (n) - [:IMAGE {Main:true}] -> (i:Image)  return n,ID(n),LABELS(n),i,ID(i),LABELS(i) ';
   return cypher.executeQuery(q, 'row')
     .then(onLoaded);
 
@@ -98,20 +98,21 @@ function getList(q, options) {
 }
 
 function labelQuery(labels) {
-  labels = labels.split(',')
-    .map(function(label) {
-      return changeCase.pascalCase(label); 
-    })
-    .join(':');
+  if (!labels instanceof Array) {
+    labels = labels.split(',');
+  }
+  labels = labels.map(function(label) {
+    return changeCase.pascalCase(label); 
+  }).join(':');
                   
-  var q = 'match (p:Picture) - [:IMAGE] -> (i:Image:Main)';
+  var q = 'match (p:Picture) - [:IMAGE {Main:true}] -> (i:Image)';
   q += ' where not p:CacheError and not p:NotFound  and p:' + labels;
   return q;
 }
 
 function propertyQuery(property) {
   property.name=changeCase.pascalCase(property.name);
-  var q = 'match (p:Picture) - [:IMAGE] -> (i:Image:Main)';
+  var q = 'match (p:Picture) - [:IMAGE {Main:true}] -> (i:Image)';
   q += ' where not p:CacheError and not p:NotFound and p.' + property.name + '=~ \'(?i).*' + property.value + '.*\' ';
   return q;
 }
@@ -159,6 +160,22 @@ var api = {
     },
     property: function(params, options) {
       var q = propertyQuery({ name: params.prop, value: params.val });
+      return getList(q, options);
+    },
+    //{site:"artsy",labels:[Delacroix,Drawing],props:{props:[Title],val:"sketchbook"},predicate:{predicate:"BY",target:"Delacroix"}}
+    search: function(query, options) {
+      /*
+      query.options = {
+        pageNum: 1,
+        pageSize: 20,
+        sort: 'created',
+        sortOrder: 'DESC'
+      };
+      */
+
+      console.log(query);
+      console.log(options);
+      var q = labelQuery(query.labels);
       return getList(q, options);
     }
   }  

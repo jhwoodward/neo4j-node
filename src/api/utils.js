@@ -8,6 +8,8 @@ var api = {
     match = match || '';
     alias = alias || 'n';
     var parsed = api.parseIdOrLabel(id);
+    console.log(id);
+    console.log(parsed);
     var q;
     if (parsed.id) {
       q = 'match (' + alias + match + ')  where ID(' + alias + ') = ' + parsed.id;

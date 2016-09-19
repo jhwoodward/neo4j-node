@@ -1,6 +1,25 @@
 var search = require('./search');
+var picture = require('./picture');
 
 module.exports = function(router) {
+
+   //for more complex queries combining property, label and predicate searches 
+   //post a json object like
+   //{site:"artsy",labels:[Delacroix,Drawing],props:{props:[Title],val:"sketchbook"},predicate:{predicate:"BY",target:"Delacroix"}}
+  router.route('/search/picture').post(function(req, res) {
+    picture.list.search(req.body.query, req.body.options)
+      .then(function (data) {
+        if (!data){
+          res.sendStatus(204);
+        } else {
+          res.status(200).json(data);
+        }
+      })
+      .catch(function (err) {
+        res.status(500).json(err);
+      });
+  });
+        
 
   //used to be /node/match
   router.route('/search').post(function(req, res) {

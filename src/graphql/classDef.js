@@ -57,13 +57,18 @@ const buildSchema = (predicates) => {
         const propsMetadata = pd.row[1].map(e => ({ required: e.Required || false }));
         type.props = _.keyBy(_.merge(props, propsMetadata), 'name');
 
-        // add id and labels
+        // add system props
         type.props.id = { type: 'string', name: 'id', readonly: true };
-        type.props.labels = { type: 'array<string>', name: 'labels' };
-        type.props.lookup = { type: 'string', name: 'lookup', required: true };
-        type.props.description = { type: 'string', name: 'description' };
+        type.props.labels = { type: 'array<string>', name: 'labels', readonly: true };
 
-        type.reltypes = {};
+        type.reltypes = {
+          type_of: { 
+            predicate: predicates['INSTANCE_OF'],
+            direction: 'out',
+            class: 'Class' 
+          }
+        };
+        
         const rels = results[1].data.filter(item => type.lookup === item.row[0]);
         rels.forEach(e => {
           const pred = e.row[1].map(p => ({ predicate: predicates[p] }));
@@ -86,7 +91,7 @@ const buildSchema = (predicates) => {
           }
         }
       });
-console.log(types[0]);
+
       return types;
     });
 };

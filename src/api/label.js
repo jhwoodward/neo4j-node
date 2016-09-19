@@ -21,7 +21,7 @@ var api = {
             }
           }
         }
-        return output;
+        return {labels: output};
       });
     },
     //if the node has any values in its labels array api match picture or person types

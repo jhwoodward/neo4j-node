@@ -55,6 +55,16 @@ module.exports = function(router) {
       });
   });
 
+  router.route('/node/saveImage').post(function(req, res) {
+    node.saveImage(req.body.node)
+      .then(function (data) {
+        res.status(201).json(data);
+      })
+      .catch(function (err) {
+        res.status(500).json(err);
+      });
+  });
+
   router.route('/node/delete').post(function(req, res) {
     node.delete(req.body.node)
       .then(function (data) {

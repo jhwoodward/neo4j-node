@@ -2,6 +2,7 @@ var router = require('express').Router();
 var type = require('./type');
 var label = require('./label');
 var predicate = require('./predicate');
+var script = require('./script');
 
 require('./node.routes')(router);
 require('./picture.routes')(router);
@@ -29,6 +30,14 @@ router.route('/labels/distinct').post(function(req,res){
   })
   .catch(function (err) {
     res.status(500).json({error:err});
+  });
+});
+
+ 
+
+router.route('/script/:lookup').get(function (req, res) {
+  script.create(req.params.lookup).then(function (types) {
+    res.status(200).json(types);
   });
 });
 

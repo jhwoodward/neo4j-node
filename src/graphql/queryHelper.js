@@ -49,11 +49,24 @@ class QueryHelper {
     const alias = aliasprefix + level;
 
     let q = this.neoWith(query);
-    let match = `${alias}:${s.type.lookup}`;
+  //  let match = `${alias}`;
+      //if labels are in place for classes
+       let match = `${alias}:${s.type.lookup}`;
+ 
     if (s.args.props.labels) {
       match += `:${s.args.props.labels.target.split(',').join(':')}`;
     }
-    q += ` match (${match}) `;
+
+  
+/*
+    if (level === 0) {
+      q += ` match (${match}) - [:INSTANCE_OF|:EXTENDS*] -> (:Class {Lookup:'${s.type.lookup}'}) `;
+    } else {
+      q += ` match (${match}) `;
+    }
+    */
+  
+      q += ` match (${match}) `;
 
     query.usedAliases.push(alias);
 
@@ -239,6 +252,7 @@ class QueryHelper {
   }
 
   execute(query) {
+    console.log(query.q);
     return cypher.executeStatements(
       [cypher.buildStatement(query.q, 'row', query.params)]).
       then(results => {

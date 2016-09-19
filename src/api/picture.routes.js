@@ -27,12 +27,10 @@ module.exports = function(router) {
       });
   });
      
-   //for more complex queries combining property, label and predicate searches 
-   //post a json object like
-   //{site:"artsy",labels:[Delacroix,Drawing],props:{props:[Title],val:"sketchbook"},predicate:{predicate:"BY",target:"Delacroix"}}
+
   router.route('/pictures/labelled/:labels').get(function(req,res){
        
-  picture.list.labelled(req.params,req.query)
+  picture.list.labelled(req.params)
     .then(function (data) {
       if (!data){
           res.sendStatus(204);
@@ -47,7 +45,7 @@ module.exports = function(router) {
 
 
   router.route('/pictures/property/:prop/:val').get(function(req,res) {
-    picture.list.property(req.params,req.query)
+    picture.list.property(req.params)
       .then(function (data) {
         if (!data){
           res.sendStatus(204);
@@ -62,7 +60,7 @@ module.exports = function(router) {
   });
 
   router.route('/pictures/:predicate/:id').get(function(req, res) {
-    picture.list.predicate(req.params,req.query)
+    picture.list.predicate(req.params)
       .then(function (data) {
         if (!data){
           res.sendStatus(204);
@@ -76,8 +74,11 @@ module.exports = function(router) {
       });
   });
 
-  router.route('/pictures').post(function(req, res) {
-    picture.list.combined(req.body,req.query)
+   //for more complex queries combining property, label and predicate searches 
+   //post a json object like
+   //{site:"artsy",labels:[Delacroix,Drawing],props:{props:[Title],val:"sketchbook"},predicate:{predicate:"BY",target:"Delacroix"}}
+  router.route('/pictures/search').post(function(req, res) {
+    picture.list.search(req.body.query, req.body.options)
       .then(function (data) {
         if (!data){
           res.sendStatus(204);

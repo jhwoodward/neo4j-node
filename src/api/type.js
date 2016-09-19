@@ -7,13 +7,13 @@ var  _ = require('lodash');
 function buildSchema(predicates) {
   var propQuery = `
     match (n:Class) optional match n - [r:PROPERTY] -> (p:Property) 
-    return n,collect(r),collect(p)
+    return n,collect(r),collect(p),null as  subtypes
     union match (n:Class) - [:EXTENDS*] -> (b:Class)-[r:PROPERTY]->(p:Property) 
-    return n,collect(r),collect(p)
-    
-    union match (n:Class) <- [:EXTENDS*] - (b:Class)-[r:PROPERTY]->(p:Property) 
-    return n,collect(r),collect(p)
-    `; // Backwards - for graphql return type only
+    return n,collect(r),collect(p),collect(b) as subtypes
+    `;
+ //   union match (n:Class) <- [:EXTENDS*] - (b:Class)-[r:PROPERTY]->(p:Property) 
+ //   return n,collect(r),collect(p),collect(b)
+ //   `; // Backwards - for graphql return type only
 
   var relTypeQuery = `
     match (n:Class ) -[r] -> (c:Class)  where type(r)<>'EXTENDS'
@@ -57,12 +57,16 @@ function buildSchema(predicates) {
             p.type = 'string';
           }
           return p;
-          /*
-          return {
-            name: changeCase.camelCase(e.Lookup),
-            type: e.Type || 'string'
-          };*/
         });
+
+        type.subtypes = [];
+        if (pd.row[3]) {
+          pd.row[3].forEach(function(e) {
+            if (type.subtypes.indexOf(e.Lookup) === -1) {
+              type.subtypes.push(e.Lookup);
+            }
+          });       
+        } 
 
         var propsMetadata = pd.row[1].map(function(e) { 
           return { 
@@ -71,14 +75,9 @@ function buildSchema(predicates) {
         });
    
         type.props = _.keyBy(_.merge(props, propsMetadata), 'name');
-
-        // add id and labels
-    //    type.props.id = { type: 'int', name: 'id', readonly: true };
-    //    type.props.labels = { type: 'array<string>', name: 'labels' };
-    //    type.props.lookup = { type: 'string', name: 'lookup', required: true };
-    //    type.props.description = { type: 'string', name: 'description' };
-
+        type.props.id = { type: 'int', name: 'id', readonly: true };
         type.reltypes = {};
+ 
         var rels = results[1].data.filter(function(item) { return type.lookup === item.row[0] });
  
         rels.forEach(function(e) {

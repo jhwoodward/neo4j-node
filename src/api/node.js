@@ -25,6 +25,7 @@ var api = {
   //Add relationships
   getWithRels: function (id) {
     var parsed = utils.parseIdOrLabel(id);
+    console.log(parsed);
     if (parsed.id) {
       return getNodeById(parsed.id)
         .then(addRelationships);
@@ -69,6 +70,18 @@ var api = {
     } else {
       return api.create(n, user);
     }
+  },
+  saveImage: function(n) {
+    console.log('save image');
+    var args = { 'nodeid': n.id, 'imageid': n.image.id };
+    var removeMain = cypher.buildStatement('match (n)-[r:IMAGE {Main:true}]->(i:Image) where ID(n)={nodeid} set r.Main=false','row',args);
+    var addMain = cypher.buildStatement('match (n),(i) where ID(i) = {imageid} and ID(n)={nodeid} MERGE (n)-[:IMAGE {Main:true}]->(i)','row',args);
+
+    return cypher.executeStatements([removeMain, addMain])
+      .then(function (result) {
+        
+        return result.length ===0;
+      });
   },
   //n can be an object with any properties
   //the following properties have special meaning:
@@ -117,8 +130,8 @@ var api = {
   },
   //Deletes node and relationships forever
   destroy: function (node) {
-    var q = 'match (n) where ID(n)=' + node.id + '  OPTIONAL MATCH (n)-[r]-()  delete n,r';
-    return cypher.executeQuery(q);
+   // var q = 'match (n) where ID(n)=' + node.id + '  OPTIONAL MATCH (n)-[r]-()  delete n,r';
+   // return cypher.executeQuery(q);
   },
   //Logical delete (relationships are left intact)
   //--removes labels and adds label Deleted
@@ -197,15 +210,24 @@ function parseNodeData(data) {
 //read
 function getNode(match, where) {
   var q = 'match(' + match + ')  where ' + where;
-  q += ' with n optional match (' + match + ') -[:IMAGE] - (i:Image:Main)';
-  q += ' return n,ID(n),LABELS(n),i ';
+  q += ' with n optional match (n) -[:INSTANCE_OF] -> (t:Class)';
+  q += ' with n,t optional match (n) -[:IMAGE {Main:true}] -> (i:Image)';
+  q += ' return n,ID(n),LABELS(n),t.Lookup,i ';
   return cypher.executeQuery(q)
     .then(function (data) {
       if (data.length) {
         var n = parseNodeData(data);
-        if (data[0].row[3]){
-            n.image = image.configure(data[0].row[3]);
+
+        if (n.class) {
+          delete n.class;
         }
+        n.type = data[0].row[3];
+        
+        var imageData = data[0].row[4];
+        if (image) {
+            n.image = image.configure(imageData);
+        }
+    
         return n;
       } else {
           return null;
@@ -225,6 +247,7 @@ function getNodeByLabel(label) {
 
 //read
 function addRelationships(n) {
+  console.log(n);
   return relationship.list.conceptual(n)
     .then(function(r) {
       if (Object.keys(r).length) {

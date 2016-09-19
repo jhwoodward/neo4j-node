@@ -28,8 +28,9 @@ var api = {
 
       //replace url/thumb with cached copy if present (?)
       if (image.cache) {
-        image.thumb.url = contentRoot + 'thumbnail/' + image.cache.replace(/ /g, '%20');
-        image.url = contentRoot + 'original/' + image.cache.replace(/ /g, '%20');
+        image.cache = image.cache.replace(/ /g, '%20').replace(/\\/g, '/');
+        image.thumb.url = contentRoot + 'thumbnail/' + image.cache.replace('.png','.jpg');
+        image.url = contentRoot + 'original/' + image.cache;
       }
       
       if (image.cacheHigh) {
