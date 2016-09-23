@@ -55,6 +55,26 @@ module.exports = function(router) {
       });
   });
 
+  router.route('/relationships/shortest/:from/:to').get(function (req, res) {
+    relationship.list.shortest(req.params.from, req.params.to)
+      .then(function(data) {
+        res.status(200).json(data);
+        })
+      .catch(function (err) {
+        res.status(500).json({ error: err });
+      });
+  });
+
+  router.route('/relationships/allshortest/:from/:to').get(function (req, res) {
+    relationship.list.allShortest(req.params.from, req.params.to)
+      .then(function(data) {
+        res.status(200).json(data);
+        })
+      .catch(function (err) {
+        res.status(500).json({ error: err });
+      });
+  });
+
   router.route('/relationship/save').post(function(req, res) {
     relationship.save(req.body.edge)//used to be req.body.e
       .then(function(data) {

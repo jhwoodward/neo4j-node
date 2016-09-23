@@ -25,7 +25,6 @@ var api = {
   //Add relationships
   getWithRels: function (id) {
     var parsed = utils.parseIdOrLabel(id);
-    console.log(parsed);
     if (parsed.id) {
       return getNodeById(parsed.id)
         .then(addRelationships);
@@ -72,7 +71,6 @@ var api = {
     }
   },
   saveImage: function(n) {
-    console.log('save image');
     var args = { 'nodeid': n.id, 'imageid': n.image.id };
     var removeMain = cypher.buildStatement('match (n)-[r:IMAGE {Main:true}]->(i:Image) where ID(n)={nodeid} set r.Main=false','row',args);
     var addMain = cypher.buildStatement('match (n),(i) where ID(i) = {imageid} and ID(n)={nodeid} MERGE (n)-[:IMAGE {Main:true}]->(i)','row',args);
@@ -212,7 +210,7 @@ function getNode(match, where) {
   var q = 'match(' + match + ')  where ' + where;
   q += ' with n optional match (n) -[:INSTANCE_OF] -> (t:Class)';
   q += ' with n,t optional match (n) -[:IMAGE {Main:true}] -> (i:Image)';
-  q += ' return n,ID(n),LABELS(n),t.Lookup,i ';
+  q += ' return n,ID(n),LABELS(n),collect(t.Lookup),collect(i) ';
   return cypher.executeQuery(q)
     .then(function (data) {
       if (data.length) {
@@ -221,9 +219,9 @@ function getNode(match, where) {
         if (n.class) {
           delete n.class;
         }
-        n.type = data[0].row[3];
+        n.type = data[0].row[3][0];
         
-        var imageData = data[0].row[4];
+        var imageData = data[0].row[4][0];
         if (image) {
             n.image = image.configure(imageData);
         }
@@ -247,7 +245,6 @@ function getNodeByLabel(label) {
 
 //read
 function addRelationships(n) {
-  console.log(n);
   return relationship.list.conceptual(n)
     .then(function(r) {
       if (Object.keys(r).length) {

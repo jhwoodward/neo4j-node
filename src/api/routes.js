@@ -17,11 +17,20 @@ router.route('/predicates').get(function (req, res) {
   });
 });
 
+router.route('/types/reset').get(function (req, res) {
+  type.reset().then(function (resp) {
+    res.status(200).json(resp);
+  });
+});
+
 router.route('/types').get(function (req, res) {
   type.getAll().then(function (types) {
     res.status(200).json(types);
   });
 });
+
+
+
 
 router.route('/labels/distinct').post(function(req,res){
   label.list.distinct(req.body.labels)    

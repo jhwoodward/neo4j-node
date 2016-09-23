@@ -45,7 +45,7 @@ const buildSchema = (predicates) => {
         const type = utils.camelCase(pd.row[0]);
 
         if (!type.lookup) {
-          console.warn(`Type without lookup (id:${pd.row[0]})`);
+          console.warn(`Type without lookup (id:${pd.row[0].id})`);
           return;
         }
 
@@ -58,7 +58,7 @@ const buildSchema = (predicates) => {
         type.props = _.keyBy(_.merge(props, propsMetadata), 'name');
 
         // add system props
-        type.props.id = { type: 'string', name: 'id', readonly: true };
+        type.props.id = { type: 'number', name: 'id', readonly: true };
         type.props.labels = { type: 'array<string>', name: 'labels', readonly: true };
 
         type.reltypes = {

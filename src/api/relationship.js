@@ -355,7 +355,67 @@ var api = {
       q += ' with n match (n) <- [:BY] - (c1:Picture) - [] - (c2:Picture) - [:BY] -> (m)';
       q += ' return m,ID(m),-1,\'inferred\',m.Label';
       return cypher.executeQuery(q).then(function(data) {
-          return build(data,options);
+          return build(data, options);
+      });
+    },
+    allShortest: function(from, to, options) {
+
+      from = utils.getMatch(from,'n');
+      to = utils.getMatch(to,'m').replace('match','');
+      var q = `${from}, ${to},
+        path = allshortestpaths((n)-[*]-(m)) 
+        WHERE NONE (r IN rels(path) 
+          WHERE 
+          type(r)= "INSTANCE_OF" or 
+          type(r)="DEPICTS"  OR 
+          TYPE(r)="CREATED" OR 
+          TYPE(r)="BY" OR
+          TYPE(r)="FROM"
+        )
+        RETURN path`;
+      return cypher.executeQuery(q,'graph').then(function(data) {
+          var out = { nodes: {}, edges:{} };
+          data.forEach(function(d) {
+            d.graph.nodes.forEach(function(n) {
+              console.log(n)
+              _.extend(n, n.properties);
+              out.nodes[n.id] = utils.camelCase(n);
+            });
+            d.graph.relationships.forEach(function(e) {
+              out.edges[e.id] = e;
+            });
+          });
+          return out;
+      });
+    },
+    shortest: function(from, to, options) {
+
+      from = utils.getMatch(from,'n');
+      to = utils.getMatch(to,'m').replace('match','');
+      var q = `${from}, ${to},
+        path = shortestpath((n)-[*]-(m)) 
+        WHERE NONE (r IN rels(path) 
+          WHERE 
+          type(r)= "INSTANCE_OF" or 
+          type(r)="DEPICTS"  OR 
+          TYPE(r)="CREATED" OR 
+          TYPE(r)="BY" OR
+          TYPE(r)="FROM"
+        )
+        RETURN path`;
+      return cypher.executeQuery(q,'graph').then(function(data) {
+          var out = { nodes: {}, edges:{} };
+          data.forEach(function(d) {
+            d.graph.nodes.forEach(function(n) {
+              console.log(n)
+              _.extend(n, n.properties);
+              out.nodes[n.id] = utils.camelCase(n);
+            });
+            d.graph.relationships.forEach(function(e) {
+              out.edges[e.id] = e;
+            });
+          });
+          return out;
       });
     }
   }

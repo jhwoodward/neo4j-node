@@ -173,8 +173,6 @@ var api = {
       };
       */
 
-      console.log(query);
-      console.log(options);
       var q = labelQuery(query.labels);
       return getList(q, options);
     }
