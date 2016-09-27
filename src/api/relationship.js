@@ -18,7 +18,7 @@ function getVisualComparisons(id1, id2, options) {
   q += ' with n,m match (n) <- [:BY] - (c1:Picture) - [r] - (c2:Picture) - [:BY] -> (m)';
   q += ' with c1,c2,r match c1 - [:IMAGE] - (i1:Main:Image) ';
   q += ' with c1,c2,i1,r match c2 - [:IMAGE] - (i2:Main:Image) ';
-  q += ' return c1,ID(c1),labels(c1),i1,c2,ID(c2),labels(c2),i2,type(r) limit 50';
+  q += ' return c1,ID(c1),labels(c1),i1,c2,ID(c2),labels(c2),i2,type(r)';
   
   return cypher.executeQuery(q).then(onLoaded);
   
@@ -53,6 +53,57 @@ function getVisualComparisons(id1, id2, options) {
     return out;
   }
 }
+
+//Returns picture comparisons for 1 node with other nodes
+//on 'BY'
+function getAllVisualComparisons(id, options) { 
+
+  var parsed = utils.getMatch(id,'n');
+
+  var q = parsed + ' with n ';
+  
+  q += ' match (n) <- [:BY] - (c1:Picture) - [r] - (c2:Picture) - [:BY] -> (m)';
+  q += ' with m,c1,c2,r match c1 - [:IMAGE] - (i1:Main:Image) ';
+  q += ' with m,c1,c2,i1,r match c2 - [:IMAGE] - (i2:Main:Image) ';
+  q += ' return c1,ID(c1),labels(c1),i1,c2,ID(c2),labels(c2),i2,type(r),m';
+  
+  return cypher.executeQuery(q).then(onLoaded);
+  
+  function onLoaded(data) {
+    var out = data.map(function (val) {
+      var item = {};
+      var props = {
+        from: utils.camelCase(val.row[4]),
+        to: utils.camelCase(val.row[0])
+      };
+          
+      if (options.format === 'compact') {
+        item.from = { title: props.from.title };
+        item.to = { title: props.to.title } ;
+        item.predicate = predicate.get(val.row[8]).toString();
+      } else {
+        item.from = _.extend(props.from, {
+          id: val.row[1],
+          labels: val.row[2]
+        });
+        item.to = _.extend(props.to, {
+          id: val.row[5],
+          labels: val.row[6]
+        });
+        item.predicate = predicate.get(val.row[8]);
+      }
+      item.from.image = image.configure(val.row[3], options);
+      item.to.image = image.configure(val.row[7], options);
+      item.with = utils.camelCase(val.row[9]);
+
+      return item;
+    });
+    
+    return out;
+  }
+}
+
+
 
 //Builds a relationships object from the following data structure:
 // target,ID(target),ID(rel),TYPE(rel)
@@ -338,6 +389,8 @@ var api = {
       if (id1 && id2){
         return getVisualComparisons(id1, id2, options);
       } else {
+        return getAllVisualComparisons(id1, options);
+/*
           var match = utils.getMatch(id1);
           var statements = [];
           //out 
@@ -345,6 +398,7 @@ var api = {
           //in
           statements.push(cypher.buildStatement(match + ' with n match (n) <- [r] - (m:Picture)- [:IMAGE] -> (i:Image:Main)  return m,ID(m), ID(r),TYPE(r),i,ID(i),LABELS(i)', 'row'));
           return relationships(statements,options);
+          */
       }
     },
     // relationships with creators
@@ -369,13 +423,12 @@ var api = {
           type(r)= "INSTANCE_OF" or 
           type(r)="DEPICTS"  OR 
           TYPE(r)="CREATED" OR 
-          TYPE(r)="BY" OR
-          TYPE(r)="FROM"
+          TYPE(r)="BY" 
         )
         RETURN path`;
       return cypher.executeQuery(q,'graph').then(function(data) {
           var out = { nodes: {}, edges:{} };
-          data.forEach(function(d) {
+          data.slice(0,3).forEach(function(d) {
             d.graph.nodes.forEach(function(n) {
               console.log(n)
               _.extend(n, n.properties);
@@ -389,7 +442,7 @@ var api = {
       });
     },
     shortest: function(from, to, options) {
-
+      //NB shortest excludes FROM
       from = utils.getMatch(from,'n');
       to = utils.getMatch(to,'m').replace('match','');
       var q = `${from}, ${to},
