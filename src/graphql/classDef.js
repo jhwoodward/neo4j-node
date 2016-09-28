@@ -7,7 +7,7 @@ import merge from 'deepmerge';
 
 const buildSchema = (predicates) => {
   const propQuery = `
-    match (n:Class) optional match n - [r:PROPERTY] -> (p:Property) 
+    match (n:Class) optional match (n) - [r:PROPERTY] -> (p:Property) 
     return n,collect(r),collect(p)
     union match (n:Class) - [:EXTENDS*] -> (b:Class)-[r:PROPERTY]->(p:Property) 
     return n,collect(r),collect(p)

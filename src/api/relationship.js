@@ -16,8 +16,8 @@ function getVisualComparisons(id1, id2, options) {
   var q = parsed1 + ' with n ' + parsed2;
   
   q += ' with n,m match (n) <- [:BY] - (c1:Picture) - [r] - (c2:Picture) - [:BY] -> (m)';
-  q += ' with c1,c2,r match c1 - [:IMAGE] - (i1:Main:Image) ';
-  q += ' with c1,c2,i1,r match c2 - [:IMAGE] - (i2:Main:Image) ';
+  q += ' with c1,c2,r match (c1) - [:IMAGE] - (i1:Main:Image) ';
+  q += ' with c1,c2,i1,r match (c2) - [:IMAGE] - (i2:Main:Image) ';
   q += ' return c1,ID(c1),labels(c1),i1,c2,ID(c2),labels(c2),i2,type(r)';
   
   return cypher.executeQuery(q).then(onLoaded);
@@ -63,8 +63,8 @@ function getAllVisualComparisons(id, options) {
   var q = parsed + ' with n ';
   
   q += ' match (n) <- [:BY] - (c1:Picture) - [r] - (c2:Picture) - [:BY] -> (m)';
-  q += ' with m,c1,c2,r match c1 - [:IMAGE] - (i1:Main:Image) ';
-  q += ' with m,c1,c2,i1,r match c2 - [:IMAGE] - (i2:Main:Image) ';
+  q += ' with m,c1,c2,r match (c1) - [:IMAGE] - (i1:Main:Image) ';
+  q += ' with m,c1,c2,i1,r match (c2) - [:IMAGE] - (i2:Main:Image) ';
   q += ' return c1,ID(c1),labels(c1),i1,c2,ID(c2),labels(c2),i2,type(r),m';
   
   return cypher.executeQuery(q).then(onLoaded);
@@ -367,7 +367,7 @@ var api = {
       //out 
       statements.push(cypher.buildStatement(match + ' with n match (n) - [r] -> (m:Label)  return m,ID(m),ID(r),TYPE(r)', 'row'));
       //in
-      statements.push(cypher.buildStatement(match + ' with n match (n) <- [r] - (m:Label)  where  NOT(n <-[:BY]-(m))    return m,ID(m),ID(r),TYPE(r)', 'row'));
+      statements.push(cypher.buildStatement(match + ' with n match (n) <- [r] - (m:Label)  where  NOT((n) <-[:BY]-(m))    return m,ID(m),ID(r),TYPE(r)', 'row'));
       return relationships(statements, options);
     },
     //Relationships with 'Property'  nodes

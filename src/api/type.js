@@ -12,7 +12,7 @@ var api = {
 
 function getTypes(predicates) {
   var propQuery = `
-    match (n:Class) optional match n - [r:PROPERTY] -> (p:Property) 
+    match (n:Class) optional match (n) - [r:PROPERTY] -> (p:Property) 
     return n,collect(r),collect(p),null as  subtypes
     union match (n:Class) - [:EXTENDS*] -> (b:Class)-[r:PROPERTY]->(p:Property) 
     return n,collect(r),collect(p),collect(b) as subtypes

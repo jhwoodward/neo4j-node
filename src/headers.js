@@ -1,4 +1,4 @@
-﻿var config = require('./config');
+﻿var config = require('./server.config');
 
 module.exports = function (req, res, next) {
   
