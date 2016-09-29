@@ -31,19 +31,7 @@ module.exports = function(router) {
       });
   });
 
-  router.route('/node/schema/:id').get(function(req, res) {
-    node.getSchema(req.params.id)
-      .then(function (data) {
-        if (!data) {
-            res.sendStatus(204);
-        } else {
-            res.status(200).json(data);
-        }
-      })
-      .catch(function (err) {
-          res.status(500).json(err);
-      });
-  });
+ 
 
   router.route('/node/save').post(function(req, res) {
     node.save(req.body.node, req.body.user)

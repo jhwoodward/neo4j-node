@@ -71,7 +71,7 @@ var api = {
   },
   //object containing all predicates keyed on Lookup
   list: {},
-  refreshList: function () {//consider creating lookup nodes for relationship types so api i can store properties for them
+  refreshList: function () {
     return cypher.executeQuery('match (n:Predicate) return ID(n),n','row')
       .then(function (data) {
         var predicates = {};

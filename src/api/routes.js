@@ -5,6 +5,7 @@ var predicate = require('./predicate');
 var script = require('./script');
 
 require('./node.routes')(router);
+require('./type.routes')(router);
 require('./picture.routes')(router);
 require('./relationship.routes')(router);
 require('./graph.routes')(router);
@@ -17,17 +18,6 @@ router.route('/predicates').get(function (req, res) {
   });
 });
 
-router.route('/types/reset').get(function (req, res) {
-  type.reset().then(function (resp) {
-    res.status(200).json(resp);
-  });
-});
-
-router.route('/types').get(function (req, res) {
-  type.getAll().then(function (types) {
-    res.status(200).json(types);
-  });
-});
 
 
 

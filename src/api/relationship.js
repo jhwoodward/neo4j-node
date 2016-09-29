@@ -370,47 +370,21 @@ var api = {
       statements.push(cypher.buildStatement(match + ' with n match (n) <- [r] - (m:Label)  where  NOT((n) <-[:BY]-(m))    return m,ID(m),ID(r),TYPE(r)', 'row'));
       return relationships(statements, options);
     },
-    //Relationships with 'Property'  nodes
-    //format is default
-    property: function (id) {
-      var match = utils.getMatch(id);
-      var statements = [];
-      //out only
-      statements.push(cypher.buildStatement(match + ' with n match (n) - [r:PROPERTY] -> (m:Property)  return m,ID(m),ID(r),TYPE(r)', 'row'));
-      return relationships(statements, { format: 'verbose' });
-    },
-    //Relationships with 'Picture' nodes
-    //Can be used 
-    //-- to get pictures related to an conceptual entity (eg paintings by an artist)
-    //-- to get pictures related to a picture
-    //-- if 2 ids are passed
-    //------picture comparisons between the 2 nodes are returned
+    //Relationships between 2 nodes based on relationships between their creations
     visual: function(id1, id2, options) {
       if (id1 && id2){
         return getVisualComparisons(id1, id2, options);
+      } else if (options.summary) {
+          //return relationships only without creations
+          var q = utils.getMatch(id1);
+          q += ' with n match (n) <- [:BY] - (c1:Picture) - [] - (c2:Picture) - [:BY] -> (m)';
+          q += ' return m,ID(m),-1,\'visual\'';
+          return cypher.executeQuery(q).then(function(data) {
+              return build(data, options);
+          });
       } else {
         return getAllVisualComparisons(id1, options);
-/*
-          var match = utils.getMatch(id1);
-          var statements = [];
-          //out 
-          statements.push(cypher.buildStatement(match + ' with n match (n) - [r] -> (m:Picture) - [:IMAGE] -> (i:Image:Main)  return m,ID(m),ID(r),TYPE(r),i,ID(i),LABELS(i)', 'row'));
-          //in
-          statements.push(cypher.buildStatement(match + ' with n match (n) <- [r] - (m:Picture)- [:IMAGE] -> (i:Image:Main)  return m,ID(m), ID(r),TYPE(r),i,ID(i),LABELS(i)', 'row'));
-          return relationships(statements,options);
-          */
       }
-    },
-    // relationships with creators
-    // inferred from relationships between their creations
-    // they may or may not have an explicit relationship defined
-    inferred: function(id, options) {
-      var q = utils.getMatch(id);
-      q += ' with n match (n) <- [:BY] - (c1:Picture) - [] - (c2:Picture) - [:BY] -> (m)';
-      q += ' return m,ID(m),-1,\'inferred\',m.Label';
-      return cypher.executeQuery(q).then(function(data) {
-          return build(data, options);
-      });
     },
     allShortest: function(from, to, options) {
 
@@ -430,8 +404,10 @@ var api = {
           var out = { nodes: {}, edges:{} };
           data.slice(0,3).forEach(function(d) {
             d.graph.nodes.forEach(function(n) {
-              console.log(n)
               _.extend(n, n.properties);
+              delete n.properties;
+              delete n.Text;
+              delete n.labels;
               out.nodes[n.id] = utils.camelCase(n);
             });
             d.graph.relationships.forEach(function(e) {
@@ -460,8 +436,10 @@ var api = {
           var out = { nodes: {}, edges:{} };
           data.forEach(function(d) {
             d.graph.nodes.forEach(function(n) {
-              console.log(n)
               _.extend(n, n.properties);
+              delete n.properties;
+              delete n.Text;
+              delete n.labels;
               out.nodes[n.id] = utils.camelCase(n);
             });
             d.graph.relationships.forEach(function(e) {

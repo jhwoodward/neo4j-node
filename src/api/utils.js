@@ -13,7 +13,8 @@ var api = {
     if (parsed.id) {
       q = 'match (' + alias + match + ')  where ID(' + alias + ') = ' + parsed.id;
     } else if (parsed.label) {
-      q = `match (${alias}${match}:Label {Label:'${parsed.label}'}) `;
+      match = match || ':Label';
+      q = `match (${alias}${match} {Lookup:'${parsed.label}'}) `;
     }
     return q;
   },

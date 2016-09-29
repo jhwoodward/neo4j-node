@@ -5,21 +5,62 @@ var predicate = require('./predicate');
 var  _ = require('lodash');
 
 var api = {
-  getAll: function() { return predicate.refreshList().then(getTypes); },
+  getAll: function() { return predicate.refreshList().then(getAll); },
+  get: function(id) { return predicate.refreshList().then(function(predicates){
+    return getOne(id, predicates); 
+  })},
   reset: function() { return setLabels();}
 };
 
+function getOne(id, predicates) {
 
-function getTypes(predicates) {
+  var match = utils.getMatch(id, 'n', ':Class');
+  var propQuery = `
+    ${match} with n optional match (n) - [r:PROPERTY] -> (p:Property) 
+    return n,collect(r),collect(p),null as  subtypes
+    union 
+    ${match} with n match (n) - [:EXTENDS*] -> (b:Class)-[r:PROPERTY]->(p:Property) 
+    return n,collect(r),collect(p),collect(b) as subtypes
+    `;
+
+
+  var relTypeQuery = `
+    ${match} with n match (n) - [r] -> (c:Class)  where type(r)<>'EXTENDS'
+    return n.Lookup,collect(type(r)),'out' as direction,collect(c.Lookup),collect(r)
+
+    union 
+
+    ${match} with n match (n)  - [:EXTENDS*] -> (d:Class) - [r] -> (c:Class)  where type(r)<>'EXTENDS' 
+    return n.Lookup,collect(type(r)),'out' as direction,collect(c.Lookup),collect(r)
+
+    union 
+
+    ${match} with n match (n)  <- [r] - (c:Class) where type(r)<>'EXTENDS' 
+    return n.Lookup,collect(type(r)),'in' as direction,collect(c.Lookup),collect(r)
+
+    union 
+    
+    ${match} with n match (n) - [:EXTENDS*] -> (d:Class) <- [r] - (c:Class) where type(r)<>'EXTENDS' 
+    return n.Lookup,collect(type(r)),'in' as direction,collect(c.Lookup),collect(r)
+    `;
+
+  var subtypesQuery = `
+    ${match} with n match (n) - [:EXTENDS*] -> (b:Class)
+    return n.Lookup,collect(b.Lookup) as subtypes
+    `;
+
+  return execute([propQuery, relTypeQuery, subtypesQuery], predicates);
+
+}
+
+function getAll(predicates) {
   var propQuery = `
     match (n:Class) optional match (n) - [r:PROPERTY] -> (p:Property) 
     return n,collect(r),collect(p),null as  subtypes
     union match (n:Class) - [:EXTENDS*] -> (b:Class)-[r:PROPERTY]->(p:Property) 
     return n,collect(r),collect(p),collect(b) as subtypes
     `;
- //   union match (n:Class) <- [:EXTENDS*] - (b:Class)-[r:PROPERTY]->(p:Property) 
- //   return n,collect(r),collect(p),collect(b)
- //   `; // Backwards - for graphql return type only
+
 
   var relTypeQuery = `
     match (n:Class ) -[r] -> (c:Class)  where type(r)<>'EXTENDS'
@@ -40,23 +81,19 @@ function getTypes(predicates) {
     match (n:Class ) - [:EXTENDS*] -> (d:Class) <- [r] - (c:Class) where type(r)<>'EXTENDS' 
     return n.Lookup,collect(type(r)),'in' as direction,collect(c.Lookup),collect(r)
     `;
-    /*
-    union match (n:Class ) <- [:EXTENDS*] - (d:Class) - [r] -> (c:Class)  
-  
-    where type(r)<>'EXTENDS' 
-    return n.Lookup,collect(type(r)),'out' as direction,collect(c.Lookup),collect(r)
-    union match (n:Class ) <- [:EXTENDS*] - (d:Class) <- [r] - (c:Class)  
-    where type(r)<>'EXTENDS' 
-    return n.Lookup,collect(type(r)),'in' as direction,collect(c.Lookup),collect(r)
-    `; // Backwards - for graphql return type only
-*/
 
   var subtypesQuery = `
     match (n:Class) - [:EXTENDS*] -> (b:Class)
     return n.Lookup,collect(b.Lookup) as subtypes
     `;
 
-  return cypher.executeStatements([propQuery, relTypeQuery, subtypesQuery]).
+  
+  return execute([propQuery, relTypeQuery, subtypesQuery], predicates);
+  
+};
+
+function execute(queries, predicates) {
+  return cypher.executeStatements(queries).
     then(function(results) {
       var types = {};
 
@@ -123,7 +160,8 @@ function getTypes(predicates) {
 
       return types;
     });
-};
+}
+
 
 function setLabels() {
   //clear existing labels
