@@ -11,6 +11,7 @@
   "scripts": {
     "test": "mocha",
     "lint": "jshint src",
+    "build": "babel src --out-dir built --source-maps",
     "watch": "babel src --out-dir built --source-maps --watch",
     "prestart": "babel src --out-dir built --source-maps",
     "start": "node built/server.js"
