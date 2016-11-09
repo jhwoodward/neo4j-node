@@ -155,11 +155,6 @@ var api = {
     return cypher.executeQuery(q)
       .then(parseNodeData);
   },
-  getSchema: function(id) {
-    return api.getLabels(id).then(function(labels) {
-      return getSchema(labels);
-    });
-  },
   getLabels: function(id) {
     var q = utils.getMatch(id) + ' with n return LABELS(n)';
     return cypher.executeQuery(q)
@@ -329,33 +324,4 @@ function updateLabels(n) {
         return cypher.executeStatements(statements);
       }  
   });
-}
-//Returns an object containing properties defined by types in labels
-//Requires n.labels
-function getSchema(labels) {
-  var label, t, schema = {};
-  for (var i = 0; i < labels.length; i++) {
-    label = labels[i];
-    t = type.list[changeCase.camelCase(label)];
-    //ignore if label does not have a type definition
-    if (!t) { continue; }
-    //can't use extend because need to ensure that required=true 
-    //always takes precendence over required=false
-    for (var key in t.props) {
-      var required = false;
-      if (schema[key]) {
-        required = schema[key].required;
-      }
-      schema[key] = t.props[key];
-      if (required) {
-        schema[key].required=true;
-      }
-    }
-  }
-  return schema;
-}
-
-function addSchema(n) {
-  n.schema = getSchema(n.labels);
-  return n;
 }
