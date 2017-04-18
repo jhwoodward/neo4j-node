@@ -1,4 +1,4 @@
-﻿# Neo4j - NodeJS Api (with REST)
+﻿# Neo4j - Node
 
 ## Prequisites
 
@@ -6,7 +6,7 @@ A neo4j graph database instance is required to provide the persistence layer. Yo
 
 ## Usage
 
-The Api provides high level CRUD methods for neo4j nodes and relationships. It can be used via REST or directly referenced from an existing NodeJS application.
+The Api provides high level generic CRUD methods for neo4j nodes and relationships. 
 
 Consider the following JSON structure:
 
